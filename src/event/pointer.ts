@@ -1,4 +1,4 @@
-import { None, type Option, Some } from "../types/option";
+import { None, type Option, Some } from "../types/option/index";
 import { Frame } from "./frame";
 
 class Builder {

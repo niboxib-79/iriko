@@ -1,2 +1,2 @@
-export * from "./ns"
-export * as Iriko from "./ns"
+export * from "./ns";
+export * as Iriko from "./ns";
