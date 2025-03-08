@@ -10,7 +10,7 @@
         "fix": "biome check --write ./src"
     },
     "keywords": [],
-    "author": "",
+    "author": "niboxib_79",
     "license": "MIT",
     "type": "module",
     "description": "A small utility library",
