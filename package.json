@@ -1,0 +1,30 @@
+{
+    "name": "iriko",
+    "version": "0.0.1",
+    "main": "dist/bundle.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "rollup -c && tsc",
+        "fmt": "biome format --write ./src",
+        "lint": "biome lint ./src",
+        "fix": "biome check --write ./src"
+    },
+    "keywords": [],
+    "author": "niboxib_79",
+    "license": "MIT",
+    "type": "module",
+    "description": "A small utility library",
+    "devDependencies": {
+        "@biomejs/biome": "^1.9.4",
+        "@rollup/plugin-typescript": "^12.1.2",
+        "rollup": "^4.34.9",
+        "tslib": "^2.8.1",
+        "typescript": "^5.8.2"
+    },"files": [
+        "dist"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/niboxib-79/iriko.git"
+    }
+}
