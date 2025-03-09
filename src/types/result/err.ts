@@ -36,7 +36,7 @@ class ErrC<T, E> {
         return this as unknown as Err<U, E>;
     }
     public map_err<F>(f: (arg0: E) => F): Err<T, F> {
-        return Err<T, F>(f(this.e));
+        return new ErrC<T, F>(f(this.e));
     }
     public and<U>(_rb: Result<U, E>): Err<U, E> {
         return this as unknown as Err<U, E>;
@@ -57,7 +57,7 @@ class ErrC<T, E> {
         return Some<E>(this.e) as Some<E>;
     }
     public invert(): Ok<E, T> {
-        return Ok<E, T>(this.e);
+        return Ok<E, T>(this.e) as Ok<E, T>
     }
     public throw(): never {
         throw this.e;
@@ -66,4 +66,4 @@ class ErrC<T, E> {
 
 export interface Err<T, E> extends ErrC<T, E> {}
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-export const Err = <T = any, E = unknown>(e: E) => new ErrC<T, E>(e);
+export const Err = <T = any, E = unknown>(e: E): Result<T, E> => new ErrC<T, E>(e);
