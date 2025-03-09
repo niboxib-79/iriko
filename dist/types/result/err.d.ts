@@ -26,5 +26,5 @@ declare class ErrC<T, E> {
 }
 export interface Err<T, E> extends ErrC<T, E> {
 }
-export declare const Err: <T = any, E = unknown>(e: E) => ErrC<T, E>;
+export declare const Err: <T = any, E = unknown>(e: E) => Result<T, E>;
 export {};

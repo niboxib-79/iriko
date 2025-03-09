@@ -57,7 +57,7 @@ class OkC<T, E> {
         return None<E>() as None<E>;
     }
     public invert(): Err<E, T> {
-        return Err<E, T>(this.val);
+        return Err<E, T>(this.val) as Err<E, T>;
     }
     public throw(): T {
         throw this.val;
@@ -66,4 +66,4 @@ class OkC<T, E> {
 
 export interface Ok<T, E> extends OkC<T, E> {}
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-export const Ok = <T = unknown, E = any>(val: T) => new OkC<T, E>(val);
+export const Ok = <T = unknown, E = any>(val: T): Result<T, E> => new OkC<T, E>(val);

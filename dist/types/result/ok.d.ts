@@ -26,5 +26,5 @@ declare class OkC<T, E> {
 }
 export interface Ok<T, E> extends OkC<T, E> {
 }
-export declare const Ok: <T = unknown, E = any>(val: T) => OkC<T, E>;
+export declare const Ok: <T = unknown, E = any>(val: T) => Result<T, E>;
 export {};

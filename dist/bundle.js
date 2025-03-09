@@ -134,7 +134,7 @@ class ErrC {
         });
     }
     map_err(f) {
-        return Err(f(this.e));
+        return new ErrC(f(this.e));
     }
     and(_rb) {
         return this;
