@@ -1,4 +1,4 @@
-import { type Result } from "~/ns";
+import { Ok } from "~/ns";
 import type { Option } from "./index";
 import { None } from "./none";
 declare class SomeC<T> {
@@ -12,12 +12,12 @@ declare class SomeC<T> {
     is_none(): this is None<T>;
     is_none_or(f: (val: T) => boolean): boolean;
     map<U>(f: (val: T) => U): Some<U>;
-    and<U>(ob: Option<U>): Option<U>;
     flat_map<U>(f: (val: T) => Option<U>): Option<U>;
+    and<U>(ob: Option<U>): Option<U>;
     or(_ob: Option<T>): Some<T>;
     or_else(_f: () => Option<T>): Some<T>;
-    ok_or<E>(_e: E): Result<T, E>;
-    ok_or_else<E>(_f: () => E): Result<T, E>;
+    ok_or<E>(_e: E): Ok<T, E>;
+    ok_or_else<E>(_f: () => E): Ok<T, E>;
     filter(f: (val: T) => boolean): Option<T>;
     zip<U>(ob: Option<U>): Option<[T, U]>;
     raw(): T;

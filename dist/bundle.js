@@ -243,10 +243,10 @@ class NoneC {
     map(_f) {
         return this;
     }
-    and(_ob) {
+    flat_map(_f) {
         return this;
     }
-    flat_map(_f) {
+    and(_ob) {
         return this;
     }
     or(ob) {
@@ -302,11 +302,11 @@ class SomeC {
     map(f) {
         return new SomeC(f(this.val));
     }
-    and(ob) {
-        return ob;
-    }
     flat_map(f) {
         return f(this.val);
+    }
+    and(ob) {
+        return ob;
     }
     or(_ob) {
         return this;
