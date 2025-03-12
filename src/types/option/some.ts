@@ -28,11 +28,11 @@ class SomeC<T> {
     public map<U>(f: (val: T) => U): Some<U> {
         return new SomeC(f(this.val));
     }
-    public and<U>(ob: Option<U>): Option<U> {
-        return ob;
-    }
     public flat_map<U>(f: (val: T) => Option<U>): Option<U> {
         return f(this.val);
+    }
+    public and<U>(ob: Option<U>): Option<U> {
+        return ob;
     }
     public or(_ob: Option<T>): Some<T> {
         return this;
@@ -40,11 +40,11 @@ class SomeC<T> {
     public or_else(_f: () => Option<T>): Some<T> {
         return this;
     }
-    public ok_or<E>(_e: E): Result<T, E> {
-        return Ok(this.val);
+    public ok_or<E>(_e: E): Ok<T, E> {
+        return Ok(this.val) as Ok<T, E>;
     }
-    public ok_or_else<E>(_f: () => E): Result<T, E> {
-        return Ok(this.val);
+    public ok_or_else<E>(_f: () => E): Ok<T, E> {
+        return Ok(this.val) as Ok<T, E>;
     }
     public filter(f: (val: T) => boolean): Option<T> {
         return f(this.val) ? this : None();

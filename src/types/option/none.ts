@@ -27,10 +27,10 @@ class NoneC<T> {
     public map<U>(_f: (val: T) => U): None<U> {
         return this as unknown as None<U>;
     }
-    public and<U>(_ob: Option<U>): None<U> {
+    public flat_map<U>(_f: (val: T) => Option<U>): None<U> {
         return this as unknown as None<U>;
     }
-    public flat_map<U>(_f: (val: T) => Option<U>): None<U> {
+    public and<U>(_ob: Option<U>): None<U> {
         return this as unknown as None<U>;
     }
     public or(ob: Option<T>): Option<T> {
@@ -39,11 +39,11 @@ class NoneC<T> {
     public or_else(f: () => Option<T>): Option<T> {
         return f();
     }
-    public ok_or<E>(e: E): Result<T, E> {
-        return Err(e);
+    public ok_or<E>(e: E): Err<T, E> {
+        return Err(e) as Err<T, E>;
     }
-    public ok_or_else<E>(f: () => E): Result<T, E> {
-        return Err(f());
+    public ok_or_else<E>(f: () => E): Err<T, E> {
+        return Err(f()) as Err<T, E>;
     }
     public filter(_f: (val: T) => boolean): None<T> {
         return this;
