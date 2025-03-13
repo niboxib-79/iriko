@@ -7,7 +7,7 @@ class SomeC<T> {
     public unwrap(): T {
         return this.val;
     }
-    public unwrap_or(alt: T): T {
+    public unwrap_or(_alt: T): T {
         return this.val;
     }
     public unwrap_or_else(f: () => T): T {
