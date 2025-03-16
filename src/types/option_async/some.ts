@@ -1,6 +1,7 @@
 import { Some } from "~/ns";
 import type { OptionAsync } from "./index";
 import { NoneAsync } from "./none";
+import { OkAsync } from "../result_async/ok";
 
 class SomeAsyncC<T> implements PromiseLike<Some<T>> {
     constructor(private val: Promise<T>) {}
@@ -67,8 +68,14 @@ class SomeAsyncC<T> implements PromiseLike<Some<T>> {
     public or_else(_f: () => OptionAsync<T>): OptionAsync<T> {
         return this;
     }
+    public ok_or<E>(_e: E): OkAsync<T, E> {
+        return OkAsync(this.val) as OkAsync<T, E>;
+    }
+    public ok_or_else<E>(_f: () => E): OkAsync<T, E> {
+        return OkAsync(this.val) as OkAsync<T, E>;
+    }
     public filter(f: (val: T) => boolean): OptionAsync<T> {
-        return this.flat_map((v) => (f(v) ? SomeAsync(v) : NoneAsync()));
+        return this.flat_map((v) => (f(v) ? Some(v).async() : NoneAsync()));
     }
     public zip<U>(ob: OptionAsync<U>): OptionAsync<[T, U]> {
         if (ob.is_some())
@@ -81,5 +88,5 @@ class SomeAsyncC<T> implements PromiseLike<Some<T>> {
 }
 
 export interface SomeAsync<T> extends SomeAsyncC<T> {}
-export const SomeAsync = <T = unknown>(v: T): OptionAsync<T> =>
-    new SomeAsyncC(new Promise<T>((resolve) => resolve(v)));
+export const SomeAsync = <T = unknown>(v: Promise<T>): OptionAsync<T> =>
+    new SomeAsyncC(v);

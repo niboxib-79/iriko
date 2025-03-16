@@ -1,6 +1,7 @@
 import { Ok, type Result } from "~/ns";
 import type { Option } from "./index";
 import { None } from "./none";
+import { SomeAsync } from "../option_async/index";
 
 class SomeC<T> {
     constructor(private val: T) {}
@@ -52,6 +53,11 @@ class SomeC<T> {
     public zip<U>(ob: Option<U>): Option<[T, U]> {
         if (ob.is_some()) return new SomeC([this.val, ob.val]);
         else return None();
+    }
+    public async(): SomeAsync<T> {
+        return SomeAsync(
+            new Promise((resolve) => resolve(this.val)),
+        ) as SomeAsync<T>;
     }
     public raw(): T {
         return this.val;

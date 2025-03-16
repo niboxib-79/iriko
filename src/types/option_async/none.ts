@@ -1,11 +1,9 @@
-import { None } from "~/ns";
+import { Err, None } from "~/ns";
 import type { OptionAsync } from "./index";
 import type { SomeAsync } from "./some";
+import type { ErrAsync } from "../result_async/err";
 
 class NoneAsyncC<T> implements PromiseLike<None<T>> {
-    public unwrap(): never {
-        throw new Error("tried to unwrap None value");
-    }
     // biome-ignore lint/suspicious/noThenProperty: <explanation>
     then<TR1, TR2>(
         onfulfilled?:
@@ -21,6 +19,9 @@ class NoneAsyncC<T> implements PromiseLike<None<T>> {
             onfulfilled ? () => onfulfilled(None() as None<T>) : undefined,
             onrejected,
         );
+    }
+    public unwrap(): never {
+        throw new Error("tried to unwrap None value");
     }
     public async unwrap_or(alt: T): Promise<T> {
         return alt;
@@ -54,6 +55,12 @@ class NoneAsyncC<T> implements PromiseLike<None<T>> {
     }
     public or_else(f: () => OptionAsync<T>): OptionAsync<T> {
         return f();
+    }
+    public ok_or<E>(e: E): ErrAsync<T, E> {
+        return Err(e).async() as ErrAsync<T, E>;
+    }
+    public ok_or_else<E>(f: () => E): ErrAsync<T, E> {
+        return Err(f()).async() as ErrAsync<T, E>;
     }
     public filter(_f: (val: T) => boolean): OptionAsync<T> {
         return this;
