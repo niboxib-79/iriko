@@ -1,8 +1,6 @@
-import { None, type Option, Some } from "~/ns";
+import { None, Some } from "~/ns";
 import type { Result } from "./index";
 import { Ok } from "./ok";
-import { OkAsync } from "../result_async/ok";
-import { ErrAsync } from "../result_async/err";
 
 class ErrC<T, E> {
     constructor(private e: E) {}
@@ -34,9 +32,6 @@ class ErrC<T, E> {
     public map<U>(_f: (val: T) => U): Err<U, E> {
         return this as unknown as Err<U, E>;
     }
-    public map_async<U>(_f: (val: T) => Promise<U>): ErrAsync<U, E> {
-        return (this as unknown as Err<U, E>).async();
-    }
     public map_err<F>(f: (arg0: E) => F): Err<T, F> {
         return new ErrC<T, F>(f(this.e));
     }
@@ -60,9 +55,6 @@ class ErrC<T, E> {
     }
     public invert(): Ok<E, T> {
         return Ok<E, T>(this.e) as Ok<E, T>
-    }
-    public async(): ErrAsync<T, E> {
-        return ErrAsync(new Promise(resolve=>resolve(this.e))) as ErrAsync<T, E>;
     }
     public throw(): never {
         throw this.e;

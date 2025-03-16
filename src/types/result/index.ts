@@ -3,6 +3,10 @@ import { Ok } from "./ok";
 
 export type Result<T, E> = Ok<T, E> | Err<T, E>;
 
+export type UnwrapR<T> = T extends Result<infer U, infer _>
+    ? U
+    : never;
+
 type ResultT = {
     try<T, E = unknown>(f: () => T): Result<T, E>;
     try_async<T, E = unknown>(f: () => Promise<T>): Promise<Result<T, E>>;

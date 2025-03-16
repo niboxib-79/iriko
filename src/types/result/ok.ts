@@ -1,7 +1,6 @@
 import { None, Some } from "~/ns";
 import { Err } from "./err";
 import type { Result } from "./index";
-import { OkAsync } from "../result_async/ok";
 
 class OkC<T, E> {
     constructor(private val: T) {}
@@ -33,9 +32,6 @@ class OkC<T, E> {
     public map<U>(f: (val: T) => U): Ok<U, E> {
         return new OkC(f(this.val));
     }
-    public map_async<U>(f: (val: T) => Promise<U>): OkAsync<U, E> {
-        return OkAsync(f(this.val)) as OkAsync<U, E>;
-    }
     public map_err<F>(_f: (arg0: E) => F): Ok<T, F> {
         return this as unknown as Ok<T, F>;
     }
@@ -59,12 +55,6 @@ class OkC<T, E> {
     }
     public invert(): Err<E, T> {
         return Err<E, T>(this.val) as Err<E, T>;
-    }
-    public async(): OkAsync<T, E> {
-        return OkAsync(new Promise((resolve) => resolve(this.val))) as OkAsync<
-            T,
-            E
-        >;
     }
     public throw(): T {
         throw this.val;

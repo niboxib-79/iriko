@@ -1,5 +1,4 @@
-import { NoneAsync } from "../option_async/none";
-import { Err, type Result } from "../result/index";
+import { Err } from "../result/index";
 import type { Option } from "./index";
 import type { Some } from "./some";
 
@@ -51,9 +50,6 @@ class NoneC<T> {
     }
     public zip<U>(_ob: Option<U>): None<[T, U]> {
         return this as None<[T, U]>;
-    }
-    public async(): NoneAsync<T> {
-        return NoneAsync() as NoneAsync<T>;
     }
     public raw(): undefined {
         return undefined;
