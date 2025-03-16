@@ -54,7 +54,7 @@ class ErrC<T, E> {
         return Some<E>(this.e) as Some<E>;
     }
     public invert(): Ok<E, T> {
-        return Ok<E, T>(this.e) as Ok<E, T>
+        return Ok<E, T>(this.e) as Ok<E, T>;
     }
     public throw(): never {
         throw this.e;
@@ -63,4 +63,5 @@ class ErrC<T, E> {
 
 export interface Err<T, E> extends ErrC<T, E> {}
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-export const Err = <T = any, E = unknown>(e: E): Result<T, E> => new ErrC<T, E>(e);
+export const Err = <T = any, E = unknown>(e: E): Result<T, E> =>
+    new ErrC<T, E>(e);
