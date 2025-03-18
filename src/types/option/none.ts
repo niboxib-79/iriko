@@ -1,5 +1,5 @@
 import { Err } from "../result/index";
-import type { Option } from "./index";
+import { NoneAsync, type Option, type OptionAsync } from "./index";
 import type { Some } from "./some";
 
 export class NoneC<T> {
@@ -53,6 +53,9 @@ export class NoneC<T> {
     }
     public raw(): undefined {
         return undefined;
+    }
+    public async(): OptionAsync<T> {
+        return NoneAsync();
     }
     private cast<U>(): None<U> {
         return this.cast<U>();

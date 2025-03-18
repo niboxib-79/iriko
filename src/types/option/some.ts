@@ -1,5 +1,5 @@
 import { Ok } from "~/ns";
-import type { Option } from "./index";
+import { type Option, type OptionAsync, SomeAsync } from "./index";
 import { None } from "./none";
 
 export class SomeC<T> {
@@ -52,6 +52,9 @@ export class SomeC<T> {
     public zip<U>(ob: Option<U>): Option<[T, U]> {
         if (ob.is_some()) return new SomeC([this.val, ob.val]);
         else return None();
+    }
+    public async(): OptionAsync<T> {
+        return SomeAsync(this.val);
     }
     public raw(): T {
         return this.val;

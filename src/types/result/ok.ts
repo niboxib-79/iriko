@@ -1,6 +1,6 @@
 import { None, Some } from "~/ns";
 import { Err } from "./err";
-import type { Result } from "./index";
+import { OkAsync, type Result, type ResultAsync } from "./index";
 
 class OkC<T, E> {
     constructor(private val: T) {}
@@ -55,6 +55,9 @@ class OkC<T, E> {
     }
     public invert(): Err<E, T> {
         return Err<E, T>(this.val) as Err<E, T>;
+    }
+    public async(): ResultAsync<T, E> {
+        return OkAsync(this.val);
     }
     public throw(): T {
         throw this.val;
