@@ -1,13 +1,13 @@
-import { Ok, type Result } from "~/ns";
-import type { Option } from "./index";
+import { Ok } from "~/ns";
+import { type Option, type OptionAsync, SomeAsync } from "./index";
 import { None } from "./none";
 
-class SomeC<T> {
+export class SomeC<T> {
     constructor(private val: T) {}
     public unwrap(): T {
         return this.val;
     }
-    public unwrap_or(alt: T): T {
+    public unwrap_or(_alt: T): T {
         return this.val;
     }
     public unwrap_or_else(f: () => T): T {
@@ -52,6 +52,9 @@ class SomeC<T> {
     public zip<U>(ob: Option<U>): Option<[T, U]> {
         if (ob.is_some()) return new SomeC([this.val, ob.val]);
         else return None();
+    }
+    public async(): OptionAsync<T> {
+        return SomeAsync(this.val);
     }
     public raw(): T {
         return this.val;

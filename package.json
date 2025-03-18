@@ -4,10 +4,11 @@
     "main": "dist/bundle.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "build": "rollup -c && tsc",
+        "build": "rollup -c && tsc -p tsconfig.build.json",
         "fmt": "biome format --write ./src",
         "lint": "biome lint ./src",
-        "fix": "biome check --write ./src"
+        "fix": "biome check --write ./src",
+        "test": "vitest"
     },
     "keywords": [],
     "author": "niboxib_79",
@@ -16,11 +17,14 @@
     "description": "A small utility library",
     "devDependencies": {
         "@biomejs/biome": "^1.9.4",
+        "@rollup/plugin-terser": "^0.4.4",
         "@rollup/plugin-typescript": "^12.1.2",
         "rollup": "^4.34.9",
         "tslib": "^2.8.1",
-        "typescript": "^5.8.2"
-    },"files": [
+        "typescript": "^5.8.2",
+        "vitest": "^3.0.8"
+    },
+    "files": [
         "dist"
     ],
     "repository": {

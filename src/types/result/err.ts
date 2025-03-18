@@ -1,5 +1,5 @@
-import { None, type Option, Some } from "~/ns";
-import type { Result } from "./index";
+import { None, Some } from "~/ns";
+import { ErrAsync, type Result, type ResultAsync } from "./index";
 import { Ok } from "./ok";
 
 class ErrC<T, E> {
@@ -32,16 +32,13 @@ class ErrC<T, E> {
     public map<U>(_f: (val: T) => U): Err<U, E> {
         return this as unknown as Err<U, E>;
     }
-    public async map_async<U>(_f: (val: T) => Promise<U>): Promise<Err<U, E>> {
-        return this as unknown as Err<U, E>;
-    }
     public map_err<F>(f: (arg0: E) => F): Err<T, F> {
         return new ErrC<T, F>(f(this.e));
     }
-    public and<U>(_rb: Result<U, E>): Err<U, E> {
+    public flat_map<U>(_f: (val: T) => Result<U, E>): Err<U, E> {
         return this as unknown as Err<U, E>;
     }
-    public flat_map<U>(_f: (val: T) => Result<U, E>): Err<U, E> {
+    public and<U>(_rb: Result<U, E>): Err<U, E> {
         return this as unknown as Err<U, E>;
     }
     public or<F>(rb: Result<T, F>): Result<T, F> {
@@ -57,7 +54,10 @@ class ErrC<T, E> {
         return Some<E>(this.e) as Some<E>;
     }
     public invert(): Ok<E, T> {
-        return Ok<E, T>(this.e) as Ok<E, T>
+        return Ok<E, T>(this.e) as Ok<E, T>;
+    }
+    public async(): ResultAsync<T, E> {
+        return ErrAsync(this.e);
     }
     public throw(): never {
         throw this.e;
@@ -66,4 +66,5 @@ class ErrC<T, E> {
 
 export interface Err<T, E> extends ErrC<T, E> {}
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-export const Err = <T = any, E = unknown>(e: E): Result<T, E> => new ErrC<T, E>(e);
+export const Err = <T = any, E = unknown>(e: E): Result<T, E> =>
+    new ErrC<T, E>(e);

@@ -1,6 +1,6 @@
 import { None, Some } from "~/ns";
 import { Err } from "./err";
-import type { Result } from "./index";
+import { OkAsync, type Result, type ResultAsync } from "./index";
 
 class OkC<T, E> {
     constructor(private val: T) {}
@@ -32,17 +32,14 @@ class OkC<T, E> {
     public map<U>(f: (val: T) => U): Ok<U, E> {
         return new OkC(f(this.val));
     }
-    public async map_async<U>(f: (val: T) => Promise<U>): Promise<Ok<U, E>> {
-        return new OkC(await f(this.val));
-    }
     public map_err<F>(_f: (arg0: E) => F): Ok<T, F> {
         return this as unknown as Ok<T, F>;
     }
-    public and<U>(rb: Result<U, E>): Result<U, E> {
-        return rb;
-    }
     public flat_map<U>(f: (val: T) => Result<U, E>): Result<U, E> {
         return f(this.val);
+    }
+    public and<U>(rb: Result<U, E>): Result<U, E> {
+        return rb;
     }
     public or<F>(_rb: Result<T, F>): Ok<T, F> {
         return this as unknown as Ok<T, F>;
@@ -59,6 +56,9 @@ class OkC<T, E> {
     public invert(): Err<E, T> {
         return Err<E, T>(this.val) as Err<E, T>;
     }
+    public async(): ResultAsync<T, E> {
+        return OkAsync(this.val);
+    }
     public throw(): T {
         throw this.val;
     }
@@ -66,4 +66,5 @@ class OkC<T, E> {
 
 export interface Ok<T, E> extends OkC<T, E> {}
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-export const Ok = <T = unknown, E = any>(val: T): Result<T, E> => new OkC<T, E>(val);
+export const Ok = <T = unknown, E = any>(val: T): Result<T, E> =>
+    new OkC<T, E>(val);
