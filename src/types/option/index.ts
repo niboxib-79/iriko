@@ -1,5 +1,6 @@
-import { None } from "./none";
-import { Some } from "./some";
+import { NoneAsync, type OptionAsync, OptionAsyncC, SomeAsync } from "./async";
+import { None, NoneC } from "./none";
+import { Some, SomeC } from "./some";
 
 export type Option<T> = Some<T> | None<T>;
 
@@ -14,6 +15,8 @@ type OptionT = {
         arr: T,
     ): Option<{ -readonly [I in keyof T]: UnwrapO<T[I]> }>;
     any<T>(arr: Option<T>[]): Option<T>;
+    async<T>(p: Promise<Option<T>>): OptionAsync<T>;
+    is(val: unknown): val is Option<unknown>;
 };
 
 export const Option: OptionT = {
@@ -43,6 +46,10 @@ export const Option: OptionT = {
         }
         return None();
     },
+    async: <T>(p: Promise<Option<T>>) => new OptionAsyncC(p),
+    is: (val: unknown) => {
+        return val instanceof SomeC || val instanceof NoneC;
+    },
 };
 
-export { None, Some };
+export { None, Some, type OptionAsync, SomeAsync, NoneAsync };

@@ -2,7 +2,7 @@ import { Ok } from "~/ns";
 import type { Option } from "./index";
 import { None } from "./none";
 
-class SomeC<T> {
+export class SomeC<T> {
     constructor(private val: T) {}
     public unwrap(): T {
         return this.val;

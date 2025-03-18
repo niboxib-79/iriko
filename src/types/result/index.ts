@@ -1,3 +1,4 @@
+import { ErrAsync, OkAsync, type ResultAsync, ResultAsyncC } from "./async";
 import { Err } from "./err";
 import { Ok } from "./ok";
 
@@ -9,6 +10,7 @@ type ResultT = {
     try<T, E = unknown>(f: () => T): Result<T, E>;
     try_async<T, E = unknown>(f: () => Promise<T>): Promise<Result<T, E>>;
     try_promise<T, E = unknown>(p: Promise<T>): Promise<Result<Awaited<T>, E>>;
+    async<T, E>(p: Promise<Result<T, E>>): ResultAsync<T, E>;
     all<T, E>(arr: Result<T, E>[]): Result<T[], E>;
     any<T, E>(arr: Result<T, E>[]): Result<T, E[]>;
 };
@@ -38,6 +40,7 @@ export const Result: ResultT = {
             return Err(e as E);
         }
     },
+    async: <T, E>(p: Promise<Result<T, E>>) => new ResultAsyncC(p),
     all: <T, E>(arr: Result<T, E>[]) => {
         const res = [];
         for (const o of arr) {
@@ -63,3 +66,4 @@ export const Result: ResultT = {
 };
 
 export { Err, Ok };
+export { type ResultAsync, ErrAsync, OkAsync };

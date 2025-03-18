@@ -2,7 +2,7 @@ import { Err } from "../result/index";
 import type { Option } from "./index";
 import type { Some } from "./some";
 
-class NoneC<T> {
+export class NoneC<T> {
     public unwrap(): never {
         throw new Error("tried to unwrap None value");
     }
@@ -25,13 +25,13 @@ class NoneC<T> {
         return true;
     }
     public map<U>(_f: (val: T) => U): None<U> {
-        return this as unknown as None<U>;
+        return this.cast<U>();
     }
     public flat_map<U>(_f: (val: T) => Option<U>): None<U> {
-        return this as unknown as None<U>;
+        return this.cast<U>();
     }
     public and<U>(_ob: Option<U>): None<U> {
-        return this as unknown as None<U>;
+        return this.cast<U>();
     }
     public or(ob: Option<T>): Option<T> {
         return ob;
@@ -53,6 +53,9 @@ class NoneC<T> {
     }
     public raw(): undefined {
         return undefined;
+    }
+    private cast<U>(): None<U> {
+        return this.cast<U>();
     }
 }
 
