@@ -4,7 +4,7 @@
     "main": "dist/bundle.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "build": "rollup -c && tsc -p tsconfig.build.json",
+        "build": "rollup -c && tsc -p ./tsconfig.build.json",
         "fmt": "biome format --write ./src",
         "lint": "biome lint ./src",
         "fix": "biome check --write ./src",
