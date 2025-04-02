@@ -6,7 +6,7 @@ export type Result<T, E> = Ok<T, E> | Err<T, E>;
 
 export type UnwrapR<T> = T extends Result<infer U, infer _> ? U : never;
 
-type ResultT = {
+interface ResultT {
     try<T, E = unknown>(f: () => T): Result<T, E>;
     try_async<T, E = unknown>(f: () => Promise<T>): Promise<Result<T, E>>;
     try_promise<T, E = unknown>(p: Promise<T>): Promise<Result<Awaited<T>, E>>;
@@ -15,7 +15,7 @@ type ResultT = {
     any<T, E>(arr: Result<T, E>[]): Result<T, E[]>;
 };
 
-export const Result: ResultT = {
+export const Result: Readonly<ResultT> = Object.freeze({
     try: <T, E = unknown>(f: () => T) => {
         try {
             const v = f();
@@ -63,7 +63,7 @@ export const Result: ResultT = {
         }
         return Err(err);
     },
-};
+});
 
 export { Err, Ok };
 export { type ResultAsync, ErrAsync, OkAsync };

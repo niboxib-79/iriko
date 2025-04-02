@@ -6,7 +6,7 @@ export type Option<T> = Some<T> | None<T>;
 
 export type UnwrapO<T> = T extends Option<infer U> ? U : never;
 
-type OptionT = {
+interface OptionT {
     from<T>(v: T | null | undefined): Option<NonNullable<T>>;
     from<T>(v: null | undefined): None<T>;
     from<T>(v: T): Some<T>;
@@ -19,7 +19,7 @@ type OptionT = {
     is(val: unknown): val is Option<unknown>;
 };
 
-export const Option: OptionT = {
+export const Option: Readonly<OptionT> = Object.freeze({
     from: <T>(v: T | null | undefined) => {
         if (v === undefined || v === null) {
             return None() as never;
@@ -50,6 +50,6 @@ export const Option: OptionT = {
     is: (val: unknown) => {
         return val instanceof SomeC || val instanceof NoneC;
     },
-};
+});
 
 export { None, Some, type OptionAsync, SomeAsync, NoneAsync };
