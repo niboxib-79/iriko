@@ -16,5 +16,6 @@ export {
     Ok,
     Err,
 } from "./types/result/index";
+export { Deque } from "./deque";
 export { PointerHandler } from "./event/pointer";
 export { Frame } from "./event/frame";
