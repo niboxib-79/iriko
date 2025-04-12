@@ -77,7 +77,7 @@ const b_flat_map = <T, U>(
     const back: U[] = [];
     b_for_each(self, (v, i) => {
         const d = f(v, i);
-        back.push(...b_iter(d));
+        back.push(...b_values(d));
     });
     return { stack_front: [], stack_back: back };
 };
@@ -90,20 +90,31 @@ const b_fold = <T, U>(self: RawDeque<T>, init: U, f: (a: U, c: T) => U) => {
     return a;
 };
 
-const b_iter = <T>(self: RawDeque<T>): IteratorObject<T> => {
+const b_values = function* <T>(self: RawDeque<T>): Generator<T> {
     const len = self.stack_front.length + self.stack_back.length;
     let i = 0;
-    const val = {
-        next: () => {
-            if (i < len) {
-                const v = { value: b_at(self, i), done: false };
-                i += 1;
-                return v;
-            } else return { value: undefined, done: true } as const;
-        },
-        [Symbol.iterator]: () => val,
-    };
-    return val;
+    while (i < len) {
+        yield b_at(self, i);
+        i += 1;
+    }
+};
+
+const b_keys = function* <T>(self: RawDeque<T>): Generator<number> {
+    const len = self.stack_front.length + self.stack_back.length;
+    let i = 0;
+    while (i < len) {
+        yield i;
+        i += 1;
+    }
+};
+
+const b_entries = function* <T>(self: RawDeque<T>): Generator<[number, T]> {
+    const len = self.stack_front.length + self.stack_back.length;
+    let i = 0;
+    while (i < len) {
+        yield [i, b_at(self, i)];
+        i += 1;
+    }
 };
 
 const b_set_i = <T>(self: RawDeque<T>, i: number, v: T) => {
@@ -133,7 +144,10 @@ export interface Deque<T> {
     readonly flat_map: <U>(f: (v: T) => Deque<U>) => Deque<U>;
     readonly fold: <U>(init: U, f: (acc: U, current: T) => U) => U;
     readonly clone: () => Deque<T>;
-    readonly [Symbol.iterator]: () => Iterator<T>;
+    readonly values: () => Generator<T>;
+    readonly keys: () => Generator<number>;
+    readonly entries: () => Generator<[number, T]>;
+    readonly [Symbol.iterator]: () => Generator<T>;
 }
 
 interface DequeT {
@@ -160,9 +174,11 @@ const DequeO = Object.freeze<DequeT>({
 
 type DequeC = Readonly<DequeT> & { new <T>(): Deque<T> };
 
-export const Deque: DequeC = new Proxy(DequeO, {
-    construct: (target) => target.new(),
-}) as DequeC;
+// biome-ignore lint/complexity/useArrowFunction: <explanation>
+export const Deque: DequeC = new Proxy(function () {}, {
+    get: (_, p) => DequeO[p as keyof DequeT],
+    construct: () => DequeO.new(),
+}) as unknown as DequeC;
 
 const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
     const body: RawDeque<T> = Object.create(DequePrototype);
@@ -174,7 +190,10 @@ const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
     const push_back = (v: T) => b_push_back(body, v);
     const pop_back = () => b_pop_back(body);
     const at_i = (i: number) => b_at(body, i);
-    const at = (i: number) => b_at_opt(body, i);
+    const at = (i: number) => {
+        const len = body.stack_back.length + body.stack_front.length;
+        b_at_opt(body, ((i % len) + len) % len);
+    };
     const for_each = (f: Callback<T>) => b_for_each(body, f);
     const map = <U>(f: Callback<T, U>) => createDeque(b_map(body, f));
     const flat_map = <U>(f: Callback<T, Deque<U>>) => {
@@ -183,7 +202,9 @@ const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
     };
     const fold = <U>(init: U, f: (acc: U, current: T) => U) =>
         b_fold(body, init, f);
-    const iter = b_iter(body);
+    const values = () => b_values(body);
+    const keys = () => b_keys(body);
+    const entries = () => b_entries(body);
     const clone = () =>
         createDeque({
             stack_front: [...body.stack_front],
@@ -214,7 +235,10 @@ const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
             else if (p === "flat_map") return flat_map;
             else if (p === "fold") return fold;
             else if (p === "clone") return clone;
-            else if (p === Symbol.iterator) return iter;
+            else if (p === "values") return values;
+            else if (p === "keys") return keys;
+            else if (p === "entries") return entries;
+            else if (p === Symbol.iterator) return values;
             else return undefined;
         },
         set: (_, p, v, _self: Deque<T>) => {

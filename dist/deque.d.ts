@@ -17,7 +17,10 @@ export interface Deque<T> {
     readonly flat_map: <U>(f: (v: T) => Deque<U>) => Deque<U>;
     readonly fold: <U>(init: U, f: (acc: U, current: T) => U) => U;
     readonly clone: () => Deque<T>;
-    readonly [Symbol.iterator]: () => Iterator<T>;
+    readonly values: () => Generator<T>;
+    readonly keys: () => Generator<number>;
+    readonly entries: () => Generator<[number, T]>;
+    readonly [Symbol.iterator]: () => Generator<T>;
 }
 interface DequeT {
     new: <T>() => Deque<T>;
