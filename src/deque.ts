@@ -174,9 +174,11 @@ const DequeO = Object.freeze<DequeT>({
 
 type DequeC = Readonly<DequeT> & { new <T>(): Deque<T> };
 
-export const Deque: DequeC = new Proxy(DequeO, {
-    construct: (target) => target.new(),
-}) as DequeC;
+// biome-ignore lint/complexity/useArrowFunction: <explanation>
+export const Deque: DequeC = new Proxy(function () {}, {
+    get: (_, p) => DequeO[p as keyof DequeT],
+    construct: () => DequeO.new(),
+}) as unknown as DequeC;
 
 const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
     const body: RawDeque<T> = Object.create(DequePrototype);
