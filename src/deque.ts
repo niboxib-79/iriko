@@ -1,4 +1,4 @@
-import { None, Some, type Option } from "./ns";
+import { None, type Option, Some } from "./ns";
 
 interface RawDeque<T> {
     head: number;
@@ -18,7 +18,7 @@ const b_grow = <T>(self: RawDeque<T>) => {
         }
     }
     self.head = 0;
-    self.tail = self.length;
+    self.tail = self.length - 1;
     self.body = new_body;
 };
 
@@ -57,19 +57,19 @@ const b_pop_back = <T>(self: RawDeque<T>) => {
 };
 
 const b_at = <T>(self: RawDeque<T>, i: number) => {
-    if (0 <= i && i < self.length) return;
+    if (!(0 <= i && i < self.length)) return;
     const j = (i + self.head) % self.body.length;
     return self.body[j];
 };
 
 const b_at_opt = <T>(self: RawDeque<T>, i: number) => {
-    if (0 <= i && i < self.length) return None();
+    if (!(0 <= i && i < self.length)) return None();
     const j = (i + self.head) % self.body.length;
     return Some(self.body[j]);
 };
 
 const b_set_i = <T>(self: RawDeque<T>, i: number, val: T) => {
-    if (0 <= i && i < self.length) return false;
+    if (!(0 <= i && i < self.length)) return false;
     const j = (i + self.head) % self.body.length;
     self.body[j] = val;
     return true;

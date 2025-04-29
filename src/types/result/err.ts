@@ -1,5 +1,10 @@
 import { None, Some } from "~/ns";
-import { ErrAsync, type Result, type ResultAsync } from "./index";
+import {
+    ErrAsync,
+    type Result,
+    type ResultAsync,
+    type ResultRaw,
+} from "./index";
 import { Ok } from "./ok";
 
 class ErrC<T, E> {
@@ -61,6 +66,9 @@ class ErrC<T, E> {
     }
     public throw(): never {
         throw this.e;
+    }
+    public raw(): ResultRaw<T, E> {
+        return { e: this.e };
     }
 }
 

@@ -17,7 +17,7 @@ interface OptionT {
     any<T>(arr: Option<T>[]): Option<T>;
     async<T>(p: Promise<Option<T>>): OptionAsync<T>;
     is(val: unknown): val is Option<unknown>;
-};
+}
 
 export const Option: Readonly<OptionT> = Object.freeze({
     from: <T>(v: T | null | undefined) => {
