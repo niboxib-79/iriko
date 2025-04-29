@@ -13,6 +13,7 @@ export {
     ErrAsync,
     UnwrapR,
     Result,
+    ResultRaw,
     Ok,
     Err,
 } from "./types/result/index";
