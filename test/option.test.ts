@@ -1,7 +1,5 @@
 import { None, Some } from "~/ns";
 
-const delay = <T>(val:T) => new Promise((resolve) => setTimeout(() => resolve(val), 10));
-
 describe("Some<T>", () => {
     it("unwrap() returns the contained value", () => {
         expect(Some(42).unwrap()).toBe(42);

@@ -41,7 +41,7 @@ const b_pop_front = <T>(self: RawDeque<T>) => {
 
 const b_push_back = <T>(self: RawDeque<T>, val: T) => {
     if (self.length === self.body.length) b_grow(self);
-    self.head = (self.tail + 1) % self.body.length;
+    self.tail = (self.tail + 1) % self.body.length;
     self.body[self.tail] = val;
     self.length += 1;
     return self.length;
@@ -56,16 +56,17 @@ const b_pop_back = <T>(self: RawDeque<T>) => {
     return Some(val);
 };
 
-const b_at = <T>(self: RawDeque<T>, i: number) => {
+const b_at = <T>(self: RawDeque<T>, i: number): T | undefined => {
     if (!(0 <= i && i < self.length)) return;
     const j = (i + self.head) % self.body.length;
     return self.body[j];
 };
 
-const b_at_opt = <T>(self: RawDeque<T>, i: number) => {
+const b_at_opt = <T>(self: RawDeque<T>, i: number): Option<T> => {
+    console.log(self, i,(0 <= i && i < self.length));
     if (!(0 <= i && i < self.length)) return None();
     const j = (i + self.head) % self.body.length;
-    return Some(self.body[j]);
+    return Some(self.body[j]!);
 };
 
 const b_set_i = <T>(self: RawDeque<T>, i: number, val: T) => {
@@ -96,14 +97,15 @@ const b_flat_map = <T, U>(
     self: RawDeque<T>,
     f: Callback<T, RawDeque<U>>,
 ): RawDeque<U> => {
+    const body: (U | undefined)[] = [];
+    for (let i = 0; i < self.length; i++)
+        body.push(...b_values(f(b_at(self, i)!, i)));
     const res: RawDeque<U> = {
         head: 0,
-        tail: self.length - 1,
-        body: [],
-        length: self.length,
+        tail: body.length - 1,
+        body: body,
+        length: body.length,
     };
-    for (let i = 0; i < self.length; i++)
-        res.body.push(...b_values(f(b_at(self, i)!, i)));
     return res;
 };
 
@@ -136,6 +138,7 @@ export interface Deque<T> {
     readonly pop_front: () => Option<T>;
     readonly push_back: (v: T) => number;
     readonly pop_back: () => Option<T>;
+    readonly forEach: (callbackfn: Callback<T>) => void;
     readonly for_each: (callbackfn: Callback<T>) => void;
     readonly map: <U>(f: (v: T) => U) => Deque<U>;
     readonly flat_map: <U>(f: (v: T) => Deque<U>) => Deque<U>;
@@ -145,6 +148,7 @@ export interface Deque<T> {
     readonly keys: () => Generator<number>;
     readonly entries: () => Generator<[number, T]>;
     readonly [Symbol.iterator]: () => Generator<T>;
+    readonly raw: RawDeque<T>;
 }
 
 interface DequeT {
@@ -196,12 +200,13 @@ const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
     const at_i = (i: number) => b_at(body, i);
     const at = (i: number) => {
         const len = body.length;
-        b_at_opt(body, ((i % len) + len) % len);
+        if (i < 0) return b_at_opt(body, i+len);
+        else return b_at_opt(body, i);
     };
     const for_each = (f: Callback<T>) => b_for_each(body, f);
     const map = <U>(f: Callback<T, U>) => createDeque(b_map(body, f));
     const flat_map = <U>(f: Callback<T, Deque<U>>) => {
-        const f2 = f as unknown as Callback<T, RawDeque<U>>;
+        const f2:Callback<T, RawDeque<U>> = (v, i) => f(v, i).raw;
         return createDeque(b_flat_map(body, f2));
     };
     const fold = <U>(init: U, f: (acc: U, current: T) => U) =>
@@ -235,7 +240,7 @@ const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
             else if (p === "pop_front") return pop_front;
             else if (p === "push_back") return push_back;
             else if (p === "pop_back") return pop_back;
-            else if (p === "forEach") return for_each;
+            else if (p === "forEach" || p === "for_each") return for_each;
             else if (p === "map") return map;
             else if (p === "flat_map") return flat_map;
             else if (p === "fold") return fold;
@@ -244,6 +249,7 @@ const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
             else if (p === "keys") return keys;
             else if (p === "entries") return entries;
             else if (p === Symbol.iterator) return values;
+            else if (p === "raw") return _;
             else return undefined;
         },
         set: (_, p, v, _self: Deque<T>) => {
