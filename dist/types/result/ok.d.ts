@@ -1,6 +1,6 @@
 import { None, Some } from "~/ns";
 import { Err } from "./err";
-import { type Result, type ResultAsync } from "./index";
+import { type Result, type ResultAsync, type ResultRaw } from "./index";
 declare class OkC<T, E> {
     private val;
     constructor(val: T);
@@ -23,6 +23,7 @@ declare class OkC<T, E> {
     invert(): Err<E, T>;
     async(): ResultAsync<T, E>;
     throw(): T;
+    raw(): ResultRaw<T, E>;
 }
 export interface Ok<T, E> extends OkC<T, E> {
 }

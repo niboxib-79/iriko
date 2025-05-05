@@ -1,6 +1,11 @@
 import { None, Some } from "~/ns";
 import { Err } from "./err";
-import { OkAsync, type Result, type ResultAsync } from "./index";
+import {
+    OkAsync,
+    type Result,
+    type ResultAsync,
+    type ResultRaw,
+} from "./index";
 
 class OkC<T, E> {
     constructor(private val: T) {}
@@ -61,6 +66,9 @@ class OkC<T, E> {
     }
     public throw(): T {
         throw this.val;
+    }
+    public raw(): ResultRaw<T, E> {
+        return { v: this.val };
     }
 }
 

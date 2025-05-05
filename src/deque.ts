@@ -1,131 +1,130 @@
-import { None, Some, type Option } from "./ns";
+import { None, type Option, Some } from "./ns";
 
 interface RawDeque<T> {
-    stack_front: T[];
-    stack_back: T[];
+    head: number;
+    tail: number;
+    body: (T | undefined)[];
+    length: number;
 }
 
-const b_push_front = <T>(self: RawDeque<T>, v: T) => {
-    self.stack_front.push(v);
-    return self.stack_back.length + self.stack_front.length;
+const b_grow = <T>(self: RawDeque<T>) => {
+    const new_body: (T | undefined)[] = [];
+    const new_cap = self.body.length === 0 ? 4 : self.body.length * 2;
+    for (let i = 0; i < new_cap; i++) {
+        if (i < self.length) {
+            new_body.push(b_at(self, i));
+        } else {
+            new_body.push(undefined);
+        }
+    }
+    self.head = 0;
+    self.tail = self.length - 1;
+    self.body = new_body;
+};
+
+const b_push_front = <T>(self: RawDeque<T>, val: T) => {
+    if (self.length === self.body.length) b_grow(self);
+    self.head = (self.head - 1 + self.body.length) % self.body.length;
+    self.body[self.head] = val;
+    self.length += 1;
+    return self.length;
 };
 
 const b_pop_front = <T>(self: RawDeque<T>) => {
-    if (self.stack_front.length + self.stack_front.length === 0)
-        return None<T>();
-    if (self.stack_front.length === 0) {
-        while (self.stack_back.length > 0) {
-            self.stack_front.push(self.stack_back.pop()!);
-        }
-    }
-    return Some(self.stack_front.pop()!);
+    if (self.length === 0) return None();
+    const val = self.body[self.head] as T;
+    self.body[self.head] = undefined;
+    self.head += 1;
+    self.length -= 1;
+    return Some(val);
 };
 
-const b_push_back = <T>(self: RawDeque<T>, v: T) => {
-    self.stack_back.push(v);
-    return self.stack_back.length + self.stack_front.length;
+const b_push_back = <T>(self: RawDeque<T>, val: T) => {
+    if (self.length === self.body.length) b_grow(self);
+    self.tail = (self.tail + 1) % self.body.length;
+    self.body[self.tail] = val;
+    self.length += 1;
+    return self.length;
 };
 
 const b_pop_back = <T>(self: RawDeque<T>) => {
-    if (self.stack_front.length + self.stack_front.length === 0)
-        return None<T>();
-    if (self.stack_back.length === 0) {
-        while (self.stack_front.length > 0) {
-            self.stack_back.push(self.stack_front.pop()!);
-        }
-    }
-    return Some(self.stack_back.pop()!);
+    if (self.length === 0) return None();
+    const val = self.body[self.tail] as T;
+    self.body[self.tail] = undefined;
+    self.tail -= 1;
+    self.length -= 1;
+    return Some(val);
 };
 
-const b_at = <T>(self: RawDeque<T>, i: number) => {
-    return i < self.stack_front.length
-        ? self.stack_front[self.stack_front.length - i - 1]
-        : self.stack_back[i - self.stack_front.length];
+const b_at = <T>(self: RawDeque<T>, i: number): T | undefined => {
+    if (!(0 <= i && i < self.length)) return;
+    const j = (i + self.head) % self.body.length;
+    return self.body[j];
 };
 
-const b_at_opt = <T>(self: RawDeque<T>, i: number) => {
-    if (0 <= i && i < self.stack_front.length + self.stack_back.length)
-        return Some(b_at(self, i));
-    else return None<T>();
+const b_at_opt = <T>(self: RawDeque<T>, i: number): Option<T> => {
+    console.log(self, i,(0 <= i && i < self.length));
+    if (!(0 <= i && i < self.length)) return None();
+    const j = (i + self.head) % self.body.length;
+    return Some(self.body[j]!);
+};
+
+const b_set_i = <T>(self: RawDeque<T>, i: number, val: T) => {
+    if (!(0 <= i && i < self.length)) return false;
+    const j = (i + self.head) % self.body.length;
+    self.body[j] = val;
+    return true;
 };
 
 type Callback<T, U = void> = (value: T, index: number) => U;
 
-const b_for_each = <T>(
-    self: RawDeque<T>,
-    f: (value: T, index: number) => void,
-) => {
-    for (let i = 0; i < self.stack_front.length; i++) {
-        f(self.stack_front[self.stack_front.length - i - 1], i);
-    }
-    for (let i = 0; i < self.stack_back.length; i++) {
-        f(self.stack_front[i], i + self.stack_front.length);
-    }
+const b_for_each = <T>(self: RawDeque<T>, f: Callback<T, void>) => {
+    for (let i = 0; i < self.length; i++) f(b_at(self, i)!, i);
 };
 
 const b_map = <T, U>(self: RawDeque<T>, f: Callback<T, U>): RawDeque<U> => {
-    return {
-        stack_front: self.stack_front.map(f),
-        stack_back: self.stack_back.map(f),
+    const res: RawDeque<U> = {
+        head: 0,
+        tail: self.length - 1,
+        body: [],
+        length: self.length,
     };
+    for (let i = 0; i < self.length; i++) res.body.push(f(b_at(self, i)!, i));
+    return res;
 };
 
 const b_flat_map = <T, U>(
     self: RawDeque<T>,
     f: Callback<T, RawDeque<U>>,
 ): RawDeque<U> => {
-    const back: U[] = [];
-    b_for_each(self, (v, i) => {
-        const d = f(v, i);
-        back.push(...b_values(d));
-    });
-    return { stack_front: [], stack_back: back };
+    const body: (U | undefined)[] = [];
+    for (let i = 0; i < self.length; i++)
+        body.push(...b_values(f(b_at(self, i)!, i)));
+    const res: RawDeque<U> = {
+        head: 0,
+        tail: body.length - 1,
+        body: body,
+        length: body.length,
+    };
+    return res;
 };
 
 const b_fold = <T, U>(self: RawDeque<T>, init: U, f: (a: U, c: T) => U) => {
     let a = init;
-    b_for_each(self, (c) => {
-        a = f(a, c);
-    });
+    for (let i = 0; i < self.length; i++) a = f(a, b_at(self, i)!);
     return a;
 };
 
 const b_values = function* <T>(self: RawDeque<T>): Generator<T> {
-    const len = self.stack_front.length + self.stack_back.length;
-    let i = 0;
-    while (i < len) {
-        yield b_at(self, i);
-        i += 1;
-    }
+    for (let i = 0; i < self.length; i++) yield b_at(self, i) as T;
 };
 
 const b_keys = function* <T>(self: RawDeque<T>): Generator<number> {
-    const len = self.stack_front.length + self.stack_back.length;
-    let i = 0;
-    while (i < len) {
-        yield i;
-        i += 1;
-    }
+    for (let i = 0; i < self.length; i++) yield i;
 };
 
 const b_entries = function* <T>(self: RawDeque<T>): Generator<[number, T]> {
-    const len = self.stack_front.length + self.stack_back.length;
-    let i = 0;
-    while (i < len) {
-        yield [i, b_at(self, i)];
-        i += 1;
-    }
-};
-
-const b_set_i = <T>(self: RawDeque<T>, i: number, v: T) => {
-    if (i < self.stack_front.length) {
-        self.stack_front[self.stack_front.length - i - 1] = v;
-        return true;
-    } else if (self.stack_front.length + self.stack_back.length <= i) {
-        self.stack_back[i - self.stack_front.length] = v;
-        return true;
-    }
-    return false;
+    for (let i = 0; i < self.length; i++) yield [i, b_at(self, i) as T];
 };
 
 // biome-ignore lint/complexity/noBannedTypes: <explanation>
@@ -139,6 +138,7 @@ export interface Deque<T> {
     readonly pop_front: () => Option<T>;
     readonly push_back: (v: T) => number;
     readonly pop_back: () => Option<T>;
+    readonly forEach: (callbackfn: Callback<T>) => void;
     readonly for_each: (callbackfn: Callback<T>) => void;
     readonly map: <U>(f: (v: T) => U) => Deque<U>;
     readonly flat_map: <U>(f: (v: T) => Deque<U>) => Deque<U>;
@@ -148,6 +148,7 @@ export interface Deque<T> {
     readonly keys: () => Generator<number>;
     readonly entries: () => Generator<[number, T]>;
     readonly [Symbol.iterator]: () => Generator<T>;
+    readonly raw: RawDeque<T>;
 }
 
 interface DequeT {
@@ -160,10 +161,15 @@ interface DequeT {
 }
 
 const DequeO = Object.freeze<DequeT>({
-    new: <T>() => createDeque<T>({ stack_back: [], stack_front: [] }),
+    new: <T>() => createDeque<T>({ head: 0, tail: -1, body: [], length: 0 }),
     from: <T>(init: T[] | Deque<T> | RawDeque<T>) => {
         if (Array.isArray(init))
-            return createDeque<T>({ stack_back: init, stack_front: [] });
+            return createDeque<T>({
+                head: 0,
+                tail: init.length - 1,
+                body: init,
+                length: init.length,
+            });
         if (Deque.is_deque<T>(init)) return init.clone();
         else return createDeque(init);
     },
@@ -182,8 +188,10 @@ export const Deque: DequeC = new Proxy(function () {}, {
 
 const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
     const body: RawDeque<T> = Object.create(DequePrototype);
-    body.stack_front = raw.stack_front;
-    body.stack_back = raw.stack_back;
+    body.head = raw.head;
+    body.tail = raw.tail;
+    body.body = raw.body;
+    body.length = raw.length;
 
     const push_front = (v: T) => b_push_front(body, v);
     const pop_front = () => b_pop_front(body);
@@ -191,13 +199,14 @@ const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
     const pop_back = () => b_pop_back(body);
     const at_i = (i: number) => b_at(body, i);
     const at = (i: number) => {
-        const len = body.stack_back.length + body.stack_front.length;
-        b_at_opt(body, ((i % len) + len) % len);
+        const len = body.length;
+        if (i < 0) return b_at_opt(body, i+len);
+        else return b_at_opt(body, i);
     };
     const for_each = (f: Callback<T>) => b_for_each(body, f);
     const map = <U>(f: Callback<T, U>) => createDeque(b_map(body, f));
     const flat_map = <U>(f: Callback<T, Deque<U>>) => {
-        const f2 = f as unknown as Callback<T, RawDeque<U>>;
+        const f2:Callback<T, RawDeque<U>> = (v, i) => f(v, i).raw;
         return createDeque(b_flat_map(body, f2));
     };
     const fold = <U>(init: U, f: (acc: U, current: T) => U) =>
@@ -207,8 +216,10 @@ const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
     const entries = () => b_entries(body);
     const clone = () =>
         createDeque({
-            stack_front: [...body.stack_front],
-            stack_back: [...body.stack_back],
+            head: body.head,
+            tail: body.tail,
+            body: [...body.body],
+            length: body.length,
         });
 
     const set_i = (i: number, v: T) => b_set_i(body, i, v);
@@ -223,14 +234,13 @@ const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
             ) {
                 const i = Number(p);
                 return at_i(i);
-            } else if (p === "length")
-                return body.stack_back.length + body.stack_front.length;
+            } else if (p === "length") return body.length;
             else if (p === "at") return at;
             else if (p === "push_front") return push_front;
             else if (p === "pop_front") return pop_front;
             else if (p === "push_back") return push_back;
             else if (p === "pop_back") return pop_back;
-            else if (p === "forEach") return for_each;
+            else if (p === "forEach" || p === "for_each") return for_each;
             else if (p === "map") return map;
             else if (p === "flat_map") return flat_map;
             else if (p === "fold") return fold;
@@ -239,6 +249,7 @@ const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
             else if (p === "keys") return keys;
             else if (p === "entries") return entries;
             else if (p === Symbol.iterator) return values;
+            else if (p === "raw") return _;
             else return undefined;
         },
         set: (_, p, v, _self: Deque<T>) => {

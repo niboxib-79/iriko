@@ -1,5 +1,5 @@
 import { None, Some } from "~/ns";
-import { type Result, type ResultAsync } from "./index";
+import { type Result, type ResultAsync, type ResultRaw } from "./index";
 import { Ok } from "./ok";
 declare class ErrC<T, E> {
     private e;
@@ -23,6 +23,7 @@ declare class ErrC<T, E> {
     invert(): Ok<E, T>;
     async(): ResultAsync<T, E>;
     throw(): never;
+    raw(): ResultRaw<T, E>;
 }
 export interface Err<T, E> extends ErrC<T, E> {
 }

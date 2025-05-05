@@ -20,7 +20,6 @@ export declare class NoneC<T> {
     zip<U>(_ob: Option<U>): None<[T, U]>;
     raw(): undefined;
     async(): OptionAsync<T>;
-    private cast;
 }
 export interface None<T> extends NoneC<T> {
 }

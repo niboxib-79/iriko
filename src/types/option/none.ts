@@ -25,13 +25,13 @@ export class NoneC<T> {
         return true;
     }
     public map<U>(_f: (val: T) => U): None<U> {
-        return this.cast<U>();
+        return this as unknown as None<U>;
     }
     public flat_map<U>(_f: (val: T) => Option<U>): None<U> {
-        return this.cast<U>();
+        return this as unknown as None<U>;
     }
     public and<U>(_ob: Option<U>): None<U> {
-        return this.cast<U>();
+        return this as unknown as None<U>;
     }
     public or(ob: Option<T>): Option<T> {
         return ob;
@@ -56,9 +56,6 @@ export class NoneC<T> {
     }
     public async(): OptionAsync<T> {
         return NoneAsync();
-    }
-    private cast<U>(): None<U> {
-        return this.cast<U>();
     }
 }
 

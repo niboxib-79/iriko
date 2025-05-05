@@ -1,7 +1,9 @@
 import { type Option } from "./ns";
 interface RawDeque<T> {
-    stack_front: T[];
-    stack_back: T[];
+    head: number;
+    tail: number;
+    body: (T | undefined)[];
+    length: number;
 }
 type Callback<T, U = void> = (value: T, index: number) => U;
 export interface Deque<T> {
@@ -12,6 +14,7 @@ export interface Deque<T> {
     readonly pop_front: () => Option<T>;
     readonly push_back: (v: T) => number;
     readonly pop_back: () => Option<T>;
+    readonly forEach: (callbackfn: Callback<T>) => void;
     readonly for_each: (callbackfn: Callback<T>) => void;
     readonly map: <U>(f: (v: T) => U) => Deque<U>;
     readonly flat_map: <U>(f: (v: T) => Deque<U>) => Deque<U>;
@@ -21,6 +24,7 @@ export interface Deque<T> {
     readonly keys: () => Generator<number>;
     readonly entries: () => Generator<[number, T]>;
     readonly [Symbol.iterator]: () => Generator<T>;
+    readonly raw: RawDeque<T>;
 }
 interface DequeT {
     new: <T>() => Deque<T>;
