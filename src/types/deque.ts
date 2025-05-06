@@ -1,4 +1,4 @@
-import { None, type Option, Some } from "./ns";
+import { None, type Option, Some } from "../ns";
 
 interface RawDeque<T> {
     head: number;
@@ -63,7 +63,7 @@ const b_at = <T>(self: RawDeque<T>, i: number): T | undefined => {
 };
 
 const b_at_opt = <T>(self: RawDeque<T>, i: number): Option<T> => {
-    console.log(self, i,(0 <= i && i < self.length));
+    console.log(self, i, 0 <= i && i < self.length);
     if (!(0 <= i && i < self.length)) return None();
     const j = (i + self.head) % self.body.length;
     return Some(self.body[j]!);
@@ -115,6 +115,30 @@ const b_fold = <T, U>(self: RawDeque<T>, init: U, f: (a: U, c: T) => U) => {
     return a;
 };
 
+const b_zip = <T, U>(self: RawDeque<T>, db: RawDeque<U>) => {
+    const body: ([T, U] | undefined)[] = [];
+    const len = Math.min(self.length, db.length);
+    for (let i = 0; i < len; i++) body.push([b_at(self, i)!, b_at(db, i)!]);
+    const res: RawDeque<[T, U]> = {
+        head: 0,
+        tail: body.length - 1,
+        body: body,
+        length: body.length,
+    };
+    return res;
+};
+
+const b_chain = <T>(self: RawDeque<T>, db: RawDeque<T>) => {
+    const body: (T | undefined)[] = [...b_values(self), ...b_values(db)];
+    const res: RawDeque<T> = {
+        head: 0,
+        tail: body.length - 1,
+        body: body,
+        length: body.length,
+    };
+    return res;
+};
+
 const b_values = function* <T>(self: RawDeque<T>): Generator<T> {
     for (let i = 0; i < self.length; i++) yield b_at(self, i) as T;
 };
@@ -130,7 +154,7 @@ const b_entries = function* <T>(self: RawDeque<T>): Generator<[number, T]> {
 // biome-ignore lint/complexity/noBannedTypes: <explanation>
 const DequePrototype = Object.create(null) as {};
 
-export interface Deque<T> {
+export interface Deque<T> extends ArrayLike<T> {
     [i: number]: T;
     readonly length: number;
     readonly at: (i: number) => Option<T>;
@@ -140,16 +164,20 @@ export interface Deque<T> {
     readonly pop_back: () => Option<T>;
     readonly forEach: (callbackfn: Callback<T>) => void;
     readonly for_each: (callbackfn: Callback<T>) => void;
-    readonly map: <U>(f: (v: T) => U) => Deque<U>;
-    readonly flat_map: <U>(f: (v: T) => Deque<U>) => Deque<U>;
+    readonly map: <U>(f: (v: T, i: number) => U) => Deque<U>;
+    readonly flat_map: <U>(f: (v: T) => Deque<U>, i: number) => Deque<U>;
     readonly fold: <U>(init: U, f: (acc: U, current: T) => U) => U;
     readonly clone: () => Deque<T>;
+    readonly zip: <U>(db: Deque<U>) => Deque<[T, U]>;
+    readonly chain: (db: Deque<T>) => Deque<T>;
     readonly values: () => Generator<T>;
     readonly keys: () => Generator<number>;
     readonly entries: () => Generator<[number, T]>;
     readonly [Symbol.iterator]: () => Generator<T>;
     readonly raw: RawDeque<T>;
 }
+
+
 
 interface DequeT {
     new: <T>() => Deque<T>;
@@ -200,17 +228,19 @@ const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
     const at_i = (i: number) => b_at(body, i);
     const at = (i: number) => {
         const len = body.length;
-        if (i < 0) return b_at_opt(body, i+len);
+        if (i < 0) return b_at_opt(body, i + len);
         else return b_at_opt(body, i);
     };
     const for_each = (f: Callback<T>) => b_for_each(body, f);
     const map = <U>(f: Callback<T, U>) => createDeque(b_map(body, f));
     const flat_map = <U>(f: Callback<T, Deque<U>>) => {
-        const f2:Callback<T, RawDeque<U>> = (v, i) => f(v, i).raw;
+        const f2: Callback<T, RawDeque<U>> = (v, i) => f(v, i).raw;
         return createDeque(b_flat_map(body, f2));
     };
     const fold = <U>(init: U, f: (acc: U, current: T) => U) =>
         b_fold(body, init, f);
+    const zip = <U>(db: Deque<U>) => createDeque(b_zip(body, db.raw));
+    const chain = (db: Deque<T>) => createDeque(b_chain(body, db.raw));
     const values = () => b_values(body);
     const keys = () => b_keys(body);
     const entries = () => b_entries(body);
@@ -245,6 +275,8 @@ const createDeque = <T>(raw: RawDeque<T>): Deque<T> => {
             else if (p === "flat_map") return flat_map;
             else if (p === "fold") return fold;
             else if (p === "clone") return clone;
+            else if (p === "zip") return zip;
+            else if (p === "chain") return chain;
             else if (p === "values") return values;
             else if (p === "keys") return keys;
             else if (p === "entries") return entries;
