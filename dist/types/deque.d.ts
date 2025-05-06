@@ -1,4 +1,4 @@
-import { type Option } from "./ns";
+import { type Option } from "../ns";
 interface RawDeque<T> {
     head: number;
     tail: number;
@@ -6,7 +6,7 @@ interface RawDeque<T> {
     length: number;
 }
 type Callback<T, U = void> = (value: T, index: number) => U;
-export interface Deque<T> {
+export interface Deque<T> extends ArrayLike<T> {
     [i: number]: T;
     readonly length: number;
     readonly at: (i: number) => Option<T>;
@@ -16,10 +16,12 @@ export interface Deque<T> {
     readonly pop_back: () => Option<T>;
     readonly forEach: (callbackfn: Callback<T>) => void;
     readonly for_each: (callbackfn: Callback<T>) => void;
-    readonly map: <U>(f: (v: T) => U) => Deque<U>;
-    readonly flat_map: <U>(f: (v: T) => Deque<U>) => Deque<U>;
+    readonly map: <U>(f: (v: T, i: number) => U) => Deque<U>;
+    readonly flat_map: <U>(f: (v: T) => Deque<U>, i: number) => Deque<U>;
     readonly fold: <U>(init: U, f: (acc: U, current: T) => U) => U;
     readonly clone: () => Deque<T>;
+    readonly zip: <U>(db: Deque<U>) => Deque<[T, U]>;
+    readonly chain: (db: Deque<T>) => Deque<T>;
     readonly values: () => Generator<T>;
     readonly keys: () => Generator<number>;
     readonly entries: () => Generator<[number, T]>;
