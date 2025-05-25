@@ -52,7 +52,7 @@ class Complex {
         return Math.sqrt(this.re * this.re + this.im * this.im);
     }
     public conjugate(): Complex {
-        return new Complex(this.re, this.im);
+        return new Complex(this.re, -this.im);
     }
     public sign(): Complex {
         const abs = this.abs();
