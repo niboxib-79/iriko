@@ -101,6 +101,6 @@ export class ResultAsyncC<T, E> implements PromiseLike<Result<T, E>> {
 export interface ResultAsync<T, E> extends ResultAsyncC<T, E> {}
 
 export const ErrAsync = <T, E>(e: E) =>
-    new ResultAsyncC(Promise.resolve(Err<T, E>(e)));
+    new ResultAsyncC<T, E>(Promise.resolve(Err<T, E>(e)));
 export const OkAsync = <T, E>(val: T) =>
-    new ResultAsyncC(Promise.resolve(Ok<T, E>(val)));
+    new ResultAsyncC<T, E>(Promise.resolve(Ok<T, E>(val)));
